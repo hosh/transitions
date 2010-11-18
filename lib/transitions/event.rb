@@ -79,5 +79,7 @@ module Transitions
         @transitions << StateTransition.new(trans_opts.merge({:from => s.to_sym}))
       end
     end
+
+    alias transition transitions
   end
 end
