@@ -4,7 +4,7 @@ require 'active_support/core_ext/module/aliasing'
 class CreateTrafficLights < ActiveRecord::Migration
   def self.up
     create_table(:traffic_lights) do |t| 
-      t.string :state
+      t.string :status
       t.string :name
     end
   end
@@ -78,14 +78,14 @@ class TestActiveRecord < Test::Unit::TestCase
     @light.reset
     assert_equal :red, @light.current_state
     @light.reload
-    assert_equal "off", @light.state
+    assert_equal "off", @light.status
   end
 
   test "transition does persists state" do
     @light.reset!
     assert_equal :red, @light.current_state
     @light.reload
-    assert_equal "red", @light.state
+    assert_equal "red", @light.status
   end
 
   test "transition to an invalid state" do
@@ -98,15 +98,15 @@ class TestActiveRecord < Test::Unit::TestCase
     protected_light.reset!
     assert_equal :red, protected_light.current_state
     protected_light.reload
-    assert_equal "red", protected_light.state
+    assert_equal "red", protected_light.status
   end
 
   test "transition with wrong state will not validate" do
     for s in @light.class.state_machine.states
-      @light.state = s.name
+      @light.status = s.name
       assert @light.valid?
     end
-    @light.state = "invalid_one"
+    @light.status = "invalid_one"
     assert_false @light.valid?
   end
 
@@ -128,7 +128,7 @@ class TestActiveRecord < Test::Unit::TestCase
   test "reloading model resets current state" do
     @light.reset
     assert @light.red?
-    @light.update_attribute(:state, 'green')
+    @light.update_attribute(:status, 'green')
     assert @light.reload.green?, "reloaded state should come from database, not instance variable"
   end
 end

@@ -1,3 +1,5 @@
+# Modified by Ho-Sheng Hsiao as per MIT License
+#
 # Copyright (c) 2009 Rick Olson
 
 # Permission is hereby granted, free of charge, to any person
@@ -24,10 +26,12 @@ module ActiveRecord
   module Transitions
     extend ActiveSupport::Concern
 
+    # TODO: The database column used for persisting state should be configurable
+    # However, in the interest of time for my employer, I am using a hack instead.
     included do
       include ::Transitions
       before_validation :set_initial_state
-      validates_presence_of :state
+      validates_presence_of :status
       validate :state_inclusion
     end
 
@@ -45,25 +49,25 @@ module ActiveRecord
       ivar = state_machine.current_state_variable
       prev_state = current_state(state_machine.name)
       instance_variable_set(ivar, state)
-      self.state = state.to_s
+      self.status = state.to_s
       save!
     rescue ActiveRecord::RecordInvalid
-      self.state = prev_state.to_s
+      self.status = prev_state.to_s
       instance_variable_set(ivar, prev_state)
       raise
     end
 
     def read_state(state_machine)
-      self.state.to_sym
+      self.status.to_sym
     end
 
     def set_initial_state
-      self.state ||= self.class.state_machine.initial_state.to_s
+      self.status ||= self.class.state_machine.initial_state.to_s
     end
 
     def state_inclusion
-      unless self.class.state_machine.states.map{|s| s.name.to_s }.include?(self.state.to_s)
-        self.errors.add(:state, :inclusion, :value => self.state)
+      unless self.class.state_machine.states.map{|s| s.name.to_s }.include?(self.status.to_s)
+        self.errors.add(:status, :inclusion, :value => self.status)
       end
     end
   end
